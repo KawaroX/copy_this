@@ -56,6 +56,45 @@
             margin: 24px 0;
         }
         
+        /* 新增：输入框样式 */
+        #textInput {
+            width: 100%;
+            border: 1px solid #e3e2e0;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        /* 新增：输入选项样式 */
+        .options-group {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .options-group .input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .options-group .input-group label {
+            font-size: 14px;
+            white-space: nowrap;
+            color: #37352f;
+        }
+
+        .options-group .input-group input[type="text"] {
+            flex: 1;
+            border: 1px solid #e3e2e0;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        
         .label {
             font-size: 12px;
             font-weight: 600;
@@ -75,6 +114,7 @@
             color: #37352f;
             word-break: break-all;
             line-height: 1.6;
+            min-height: 50px;
         }
         
         .parts-container {
@@ -101,17 +141,12 @@
             border-color: #d3d1cb;
         }
         
-        /* 新增：选中状态的样式 */
-        .part-item.selected {
-            background: #e3f2fd;
-            border-color: #90caf9;
-        }
-        
         .part-text {
             font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
             font-size: 15px;
             color: #37352f;
             flex: 1;
+            word-break: break-all;
         }
         
         .part-label {
@@ -126,6 +161,7 @@
             font-size: 12px;
             opacity: 0;
             transition: opacity 0.2s;
+            padding-left: 10px;
         }
         
         .part-item:hover .copy-indicator {
@@ -171,6 +207,12 @@
         
         .btn-secondary:hover {
             background: #f7f7f5;
+        }
+
+        /* 新增：用于返回按钮 */
+        .btn-back {
+            flex: 0 1 auto; /* 不拉伸，保持内容宽度 */
+            padding: 10px 16px;
         }
         
         .status {
@@ -229,6 +271,7 @@
             font-size: 14px;
             cursor: pointer;
             user-select: none;
+            color: #37352f;
         }
     </style>
 </head>
@@ -240,7 +283,28 @@
             <div class="subtitle" id="subtitle">点击内容即可复制到剪贴板</div>
         </div>
 
-        <div class="content-section" id="mainContent">
+        <div class="content-section" id="inputSection" style="display: none;">
+            <div class="label">输入内容</div>
+            <textarea id="textInput" rows="5" placeholder="在此粘贴您的文本..."></textarea>
+            
+            <div class="options-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="autoSplitCheckbox" checked>
+                    <label for="autoSplitCheckbox">智能拆分</label>
+                </div>
+                <div class="input-group">
+                    <label for="customSplitInput">自定义分隔符:</label>
+                    <input type="text" id="customSplitInput" placeholder="例如：, 或 \n (换行)">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="processInput()">处理内容</button>
+                <button class="btn btn-secondary" onclick="generateLink()">生成分享链接</button>
+            </div>
+        </div>
+
+        <div class="content-section" id="mainContent" style="display: none;">
             <div class="label">内容</div>
             <div class="display-box" id="fullContent">-</div>
         </div>
@@ -254,12 +318,15 @@
             </div>
         </div>
 
-        <div class="button-group">
-            <button class="btn btn-primary" id="copyMainBtn">
+        <div class="button-group" id="mainActionButtons" style="display: none;">
+            <button class="btn btn-primary" onclick="copyContent()">
                 <span id="btnText">复制</span>
             </button>
-            <button class="btn btn-secondary" id="copyAllBtn" style="display: none;">
+            <button class="btn btn-secondary" onclick="copyAll()" id="copyAllBtn" style="display: none;">
                 复制全部
+            </button>
+            <button class="btn btn-secondary btn-back" onclick="resetPage()" id="resetBtn">
+                返回
             </button>
         </div>
 
@@ -269,8 +336,7 @@
 
         <div class="info-text">
             <strong>使用方法：</strong><br>
-            • 自动复制：<code>?code=取件码</code> (加载后自动复制)<br>
-            • 基础复制：<code>?text=内容</code> (显示完整内容)<br>
+            • 基础复制：<code>?code=内容</code><br>
             • 智能拆分：<code>?text=内容&mode=auto</code><br>
             • 自定义分隔：<code>?text=内容&split=,</code><br>
             • 多个值：<code>?values=值1,值2,值3</code>
@@ -294,45 +360,52 @@
             };
         }
 
-        // 优化的 autoExtractParts，避免重叠
+        /**
+         * 优化的智能提取函数
+         */
         function autoExtractParts(text) {
             const parts = [];
-            let remainingText = text;
+            const seen = new Set(); // 用于去重
 
-            // 1. 提取中文括号内容
-            // (?<=\【) 是正向后行断言，匹配 【 后面的内容，(?!=\】) 是负向前行断言，匹配不以 】 结尾的内容
-            // 这种写法更精确，只提取括号内的内容
-            const brackets = text.match(/【([^】]+)】/g);
-            if (brackets) {
-                brackets.forEach((item, i) => {
-                    const content = item.replace(/【|】/g, '');
-                    parts.push({ label: `标签 ${i + 1}`, value: content, type: 'tag' });
-                    remainingText = remainingText.replace(item, ' '); // 从剩余文本中移除
-                });
-            }
+            // 辅助函数，避免重复添加
+            const addPart = (label, value, type) => {
+                const trimmedValue = value.trim();
+                if (trimmedValue && !seen.has(trimmedValue)) {
+                    parts.push({ label, value: trimmedValue, type });
+                    seen.add(trimmedValue);
+                }
+            };
 
-            // 2. 提取地点信息 (增加了对 - 的支持)
-            const locationRegex = /([\u4e00-\u9fa5A-Za-z0-9]+[柜楼]\s*[A-Z0-9-]+)/g;
-            const locations = text.match(locationRegex);
-            if (locations) {
-                locations.forEach((loc, i) => {
-                    parts.push({ label: `位置 ${i + 1}`, value: loc.trim(), type: 'location' });
-                    remainingText = remainingText.replace(loc, ' '); // 从剩余文本中移除
-                });
-            }
-            
-            // 3. 提取剩余文本中的数字（\b 是单词边界，防止匹配到一半）
-            const numbers = remainingText.match(/\b\d{6,}\b/g);
-            if (numbers) {
-                numbers.forEach((num, i) => {
-                    parts.push({ label: `数字 ${i + 1}`, value: num, type: 'number' });
-                });
+            // 提取器定义
+            const extractors = [
+                // 1. 网址
+                { label: '网址', regex: /(https?:\/\/[^\s"'<>()]+)/gi, group: 1 },
+                // 2. 电话号码
+                { label: '电话', regex: /(1[3-9]\d{9})(?!\d)/g, group: 1 },
+                // 3. 【标签】
+                { label: '标签', regex: /【([^】]+)】/g, group: 1 },
+                // 4. 取件码 (包括字母)
+                { label: '取件码', regex: /(?:取件码|取货码|验证码|提取码|code)\s*[:：]?\s*([A-Za-z0-9]+)/gi, group: 1 },
+                // 5. 4位尾号
+                { label: '尾号', regex: /(?:尾号)\s*(\d{4})/g, group: 1 },
+                // 6. 地址
+                { label: '地址', regex: /(?:地址|address)\s*[:：]?\s*([^\n，。]+(?:(?:省|市|区|路|号|楼|座|室|中心|服务站)[^\n，。]*))/gi, group: 1 },
+                // 7. 6位以上纯数字（作为备用取件码）
+                { label: '数字', regex: /(\d{6,})/g, group: 1 }
+            ];
+
+            for (const extractor of extractors) {
+                let match;
+                while ((match = extractor.regex.exec(text)) !== null) {
+                    if (match[extractor.group]) {
+                        addPart(extractor.label, match[extractor.group], extractor.label.toLowerCase());
+                    }
+                }
             }
             
             return parts;
         }
 
-        // 优化：使用 createElement 和 addEventListener
         function renderParts(parts) {
             const container = document.getElementById('partsContainer');
             container.innerHTML = '';
@@ -340,29 +413,15 @@
             parts.forEach((part, index) => {
                 const div = document.createElement('div');
                 div.className = 'part-item';
-                // 行为绑定
-                div.addEventListener('click', () => togglePart(index, part.value));
+                div.onclick = () => togglePart(index, part.value);
                 
-                const contentDiv = document.createElement('div');
-                contentDiv.style.flex = '1';
-
-                const labelDiv = document.createElement('div');
-                labelDiv.className = 'part-label';
-                labelDiv.textContent = part.label; // 使用 textContent 安全
-
-                const textDiv = document.createElement('div');
-                textDiv.className = 'part-text';
-                textDiv.textContent = part.value; // 使用 textContent 安全
-
-                contentDiv.appendChild(labelDiv);
-                contentDiv.appendChild(textDiv);
-
-                const indicatorDiv = document.createElement('div');
-                indicatorDiv.className = 'copy-indicator';
-                indicatorDiv.textContent = '点击复制';
-
-                div.appendChild(contentDiv);
-                div.appendChild(indicatorDiv);
+                div.innerHTML = `
+                    <div style="flex: 1;">
+                        <div class="part-label">${part.label}</div>
+                        <div class="part-text">${part.value}</div>
+                    </div>
+                    <div class="copy-indicator">点击复制</div>
+                `;
                 
                 container.appendChild(div);
             });
@@ -383,12 +442,16 @@
             }
         }
 
-        // 优化：使用 classList.toggle
         function updatePartSelection() {
             const items = document.querySelectorAll('.part-item');
             items.forEach((item, index) => {
-                // 第二个参数为 true 时添加类，为 false 时移除类
-                item.classList.toggle('selected', selectedParts.has(index));
+                if (selectedParts.has(index)) {
+                    item.style.background = '#e3f2fd';
+                    item.style.borderColor = '#90caf9';
+                } else {
+                    item.style.background = '#f7f7f5';
+                    item.style.borderColor = '#e3e2e0';
+                }
             });
         }
 
@@ -404,16 +467,13 @@
 
         async function copyToClipboard(text, successMsg) {
             try {
-                // 优先使用现代异步 Clipboard API
                 await navigator.clipboard.writeText(text);
                 showStatus(successMsg || '复制成功！', true);
             } catch (err) {
-                // 降级处理
                 const textArea = document.createElement('textarea');
                 textArea.value = text;
                 textArea.style.position = 'fixed';
                 textArea.style.left = '-999999px';
-                textArea.style.top = '0';
                 document.body.appendChild(textArea);
                 textArea.select();
                 
@@ -440,10 +500,11 @@
             } else if (currentMode === 'simple') {
                 const content = document.getElementById('fullContent').textContent;
                 copyToClipboard(content, '已复制');
-            } else if (currentMode === 'parts' && !checkbox.checked) {
-                 showStatus('请点击要复制的内容，或勾选“一次性复制”', false);
-            } else if (currentMode === 'parts' && checkbox.checked && selectedParts.size === 0) {
-                showStatus('请点击选择要复制的内容', false);
+            } else if (currentMode === 'parts' && (!checkbox.checked || selectedParts.size === 0)) {
+                 showStatus('请点击要复制的内容，或勾选“一次性复制”并选择', false);
+            } else {
+                const content = document.getElementById('fullContent').textContent;
+                copyToClipboard(content, '已复制');
             }
         }
 
@@ -452,24 +513,125 @@
             copyToClipboard(content, '已复制完整内容');
         }
 
-        function init() {
-            const params = getUrlParams();
+        /**
+         * 新增：处理来自输入框的内容
+         */
+        function processInput() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                showStatus('请输入内容', false);
+                return;
+            }
+
+            const customSplit = document.getElementById('customSplitInput').value;
+            const autoSplit = document.getElementById('autoSplitCheckbox').checked;
+
+            // 隐藏输入区，显示内容区
+            document.getElementById('inputSection').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('mainActionButtons').style.display = 'flex';
+
+            document.getElementById('fullContent').textContent = text;
+            extractedParts = [];
+            selectedParts.clear();
             
+            let parts = [];
+            
+            if (customSplit) {
+                // 自定义分隔
+                currentMode = 'parts';
+                // 允许 \n 作为换行符
+                const separator = customSplit.replace(/\\n/g, '\n');
+                parts = text.split(separator).map(v => v.trim()).filter(v => v);
+                extractedParts = parts.map((v, i) => ({ 
+                    label: `部分 ${i + 1}`, 
+                    value: v,
+                    type: 'part'
+                }));
+            } else if (autoSplit) {
+                // 智能拆分
+                currentMode = 'parts';
+                extractedParts = autoExtractParts(text);
+            } else {
+                // 简单模式
+                currentMode = 'simple';
+            }
+            
+            if (extractedParts.length > 0) {
+                renderParts(extractedParts);
+                document.getElementById('partsSection').style.display = 'block';
+                document.getElementById('copyAllBtn').style.display = 'block';
+                document.getElementById('btnText').textContent = '复制选中';
+            } else {
+                document.getElementById('partsSection').style.display = 'none';
+                document.getElementById('copyAllBtn').style.display = 'none';
+                document.getElementById('btnText').textContent = '复制';
+            }
+        }
+
+        /**
+         * 新增：生成分享链接
+         */
+        function generateLink() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                showStatus('请输入内容以生成链接', false);
+                return;
+            }
+            
+            const customSplit = document.getElementById('customSplitInput').value;
+            const autoSplit = document.getElementById('autoSplitCheckbox').checked;
+            
+            const baseUrl = window.location.origin + window.location.pathname;
+            let params = new URLSearchParams();
+            
+            params.set('text', text);
+            
+            if (customSplit) {
+                params.set('split', customSplit);
+            } else if (autoSplit) {
+                params.set('mode', 'auto');
+            }
+            
+            const url = `${baseUrl}?${params.toString()}`;
+            copyToClipboard(url, '分享链接已复制！');
+        }
+
+        /**
+         * 新增：返回输入界面
+         */
+        function resetPage() {
+            // 使用 pathname 重置页面，清除所有URL参数
+            window.location.href = window.location.pathname;
+        }
+
+        /**
+         * 新增：根据参数设置页面
+         */
+        function setupFromParams(params) {
+            // 显示主内容区和按钮
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('mainActionButtons').style.display = 'flex';
+
+            // 设置标题
             if (params.title) {
                 document.getElementById('title').textContent = decodeURIComponent(params.title);
             }
             
+            // 简单模式：直接复制 code
             if (params.code) {
                 currentMode = 'simple';
-                document.getElementById('fullContent').textContent = params.code;
+                const code = decodeURIComponent(params.code);
+                document.getElementById('fullContent').textContent = code;
                 document.getElementById('subtitle').textContent = '内容已自动复制到剪贴板';
-                copyToClipboard(params.code, '已自动复制');
+                copyToClipboard(code, '已自动复制内容');
                 return;
             }
             
+            // 多值模式
             if (params.values) {
                 currentMode = 'parts';
-                const values = params.values.split(',').map(v => v.trim());
+                const values = decodeURIComponent(params.values).split(',').map(v => v.trim());
                 document.getElementById('fullContent').textContent = values.join('\n');
                 extractedParts = values.map((v, i) => ({ 
                     label: `项目 ${i + 1}`, 
@@ -483,12 +645,12 @@
                 return;
             }
             
+            // 文本处理模式
             if (params.text) {
                 const text = decodeURIComponent(params.text);
                 document.getElementById('fullContent').textContent = text;
                 
-                let processed = false;
-                
+                // 自动识别模式
                 if (params.mode === 'auto') {
                     currentMode = 'parts';
                     extractedParts = autoExtractParts(text);
@@ -498,13 +660,14 @@
                         document.getElementById('partsSection').style.display = 'block';
                         document.getElementById('copyAllBtn').style.display = 'block';
                         document.getElementById('btnText').textContent = '复制选中';
-                        processed = true;
                     }
                 }
                 
-                if (params.split && !processed) { // 避免 auto 和 split 同时生效
+                // 自定义分隔符
+                else if (params.split) {
                     currentMode = 'parts';
-                    const parts = text.split(params.split).map(v => v.trim()).filter(v => v);
+                    const separator = decodeURIComponent(params.split).replace(/\\n/g, '\n');
+                    const parts = text.split(separator).map(v => v.trim()).filter(v => v);
                     extractedParts = parts.map((v, i) => ({ 
                         label: `部分 ${i + 1}`, 
                         value: v,
@@ -516,14 +679,38 @@
                     document.getElementById('btnText').textContent = '复制选中';
                 }
                 
+                // 默认简单模式
+                else {
+                    currentMode = 'simple';
+                }
                 return;
             }
-            
-            showStatus('URL中未找到内容参数', false);
+        }
+        
+        /**
+         * 新增：设置输入模式
+         */
+        function setupInputMode() {
+            document.getElementById('inputSection').style.display = 'block';
+            document.getElementById('subtitle').textContent = '粘贴内容或使用URL参数';
+            // 确保其他部分隐藏
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('partsSection').style.display = 'none';
+            document.getElementById('mainActionButtons').style.display = 'none';
         }
 
-        // --- 统一的事件监听器 ---
-        
+        function init() {
+            const params = getUrlParams();
+            
+            // 检查是否有任何有效参数
+            if (params.code || params.text || params.values) {
+                setupFromParams(params);
+            } else {
+                // 没有参数，进入输入模式
+                setupInputMode();
+            }
+        }
+
         window.addEventListener('load', init);
         
         document.getElementById('copyAllCheckbox').addEventListener('change', (e) => {
@@ -532,10 +719,6 @@
                 updatePartSelection();
             }
         });
-
-        document.getElementById('copyMainBtn').addEventListener('click', copyContent);
-        document.getElementById('copyAllBtn').addEventListener('click', copyAll);
-        
     </script>
 </body>
 </html>
