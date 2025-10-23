@@ -3,337 +3,248 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>快速复制 · 改进版</title>
+  <title>快速复制 · 双界面 & 更智能</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    :root { --bg:#f7f7f5; --fg:#37352f; --muted:#787774; --line:#e3e2e0; --card:#fff; --accent:#0f7b6c; }
-    body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',sans-serif; background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: var(--fg); }
-    .container { background: var(--card); border-radius: 12px; padding: 40px 32px; width: 100%; max-width: 860px; box-shadow: 0 1px 3px rgba(0,0,0,.05),0 10px 40px rgba(0,0,0,.08); display: grid; grid-template-columns: 1.2fr .8fr; gap: 28px; }
-    @media (max-width: 900px){ .container{ grid-template-columns: 1fr; } }
-    .header{ grid-column: 1/-1; margin-bottom: -8px; }
-    .icon{ font-size: 40px; margin-bottom: 6px; }
-    h1{ font-size: 24px; font-weight: 700; }
-    .subtitle{ color: var(--muted); font-size: 14px; margin-top: 4px; }
-
-    .section{ background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-    .section + .section{ margin-top: 16px; }
-    .label{ font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 10px; }
-
-    .display-box{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size: 15px; color: var(--fg); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
-
-    .parts{ display:flex; flex-direction:column; gap:10px; }
-    .part{ display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; cursor:pointer; transition:.12s ease; }
-    .part:hover{ border-color:#d3d1cb; background:#f0f0ee; }
-    .part.active{ border-color:#90caf9; background:#e3f2fd; }
-    .part-k{ font-size:11px; color: var(--muted); min-width: 86px; }
-    .part-v{ font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size: 14px; color: var(--fg); flex:1; }
-
-    .row{ display:flex; gap:10px; align-items:center; }
-    .row > *{ flex:1; }
-    .btn{ border:none; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer; transition:.12s ease; }
-    .btn-primary{ background: var(--fg); color:#fff; }
-    .btn-primary:hover{ filter: brightness(.9); }
-    .btn-secondary{ background:#fff; color: var(--fg); border:1px solid var(--line); }
-    .btn-secondary:hover{ background:#f7f7f5; }
-
-    .status{ margin-top:10px; padding:10px 12px; border-radius:8px; font-size:14px; display:none; }
-    .status.show{ display:flex; align-items:center; gap:8px; }
-    .status.ok{ background:#edf3ec; color:#0f7b6c; }
-    .status.err{ background:#fdebec; color:#e03e3e; }
-
-    .hint{ color:#9b9a97; font-size:12px; line-height:1.5; }
-    .divider{ height:1px; background:var(--line); margin:12px 0; }
-
-    textarea,input[type="text"]{ width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 12px; background:#fff; color:var(--fg); font:inherit; }
-    .small{ font-size:12px; color:var(--muted); }
-    .opt{ display:flex; align-items:center; gap:8px; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#f7f7f5;--fg:#37352f;--muted:#787774;--line:#e3e2e0;--card:#fff;--accent:#0f7b6c}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh}
+    .wrap{max-width:860px;margin:0 auto;padding:18px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 10px 40px rgba(0,0,0,.08);padding:18px}
+    .header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .icon{font-size:24px}
+    h1{font-size:20px;font-weight:800}
+    .muted{color:var(--muted)}
+    .section{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+    textarea,input[type=text]{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font:inherit;color:var(--fg)}
+    .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
+    .btn{border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .btn-primary{background:var(--fg);color:#fff}.btn-secondary{background:#fff;color:var(--fg);border:1px solid var(--line)}
+    .status{display:none;margin-top:8px;padding:10px;border-radius:10px;font-size:14px}
+    .status.show{display:block}.status.ok{background:#edf3ec;color:#0f7b6c}.status.err{background:#fdebec;color:#e03e3e}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+    .display{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .pill{display:inline-block;background:#fff;border:1px solid var(--line);padding:2px 8px;border-radius:999px;font-size:12px;margin-right:6px}
+    .parts{display:flex;flex-direction:column;gap:8px}
+    .part{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer}
+    .part:hover{background:#f0f0ee}.part.active{background:#e3f2fd;border-color:#90caf9}
+    .k{min-width:80px;font-size:12px;color:var(--muted)}.v{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .topbar{position:sticky;top:0;z-index:10;background:var(--bg);padding:8px 0;margin:-8px 0 8px}
+    .link{word-break:break-all}.back{display:inline-flex;align-items:center;gap:6px}
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="icon">📋</div>
-      <h1 id="title">快速复制</h1>
-      <div class="subtitle" id="subtitle">可自动识别取件码、电话、网址、地址等；支持生成可分享链接</div>
+  <div class="wrap">
+    <!-- 视图 A：输入页 -->
+    <div id="view-input" class="card" role="region" aria-labelledby="titleA">
+      <div class="header"><div class="icon">✂️</div><h1 id="titleA">快速复制（输入）</h1></div>
+      <p class="muted">在此粘贴短信或文本；可选择“自动分离”或自定义分隔符。点“解析”后进入结果页。</p>
+
+      <div class="section">
+        <div class="row">
+          <label class="row" style="align-items:flex-start;gap:10px">
+            <span class="muted" style="flex:0 0 96px">输入文本</span>
+            <textarea id="ta" rows="7" placeholder="粘贴到这里，例如：
+【京东快递】取件码S0246… 联系电话 18210824625 … https://3.cn/… 地址：…
+或：
+【驿小哥】…请20:00前凭B-2191来取…"></textarea>
+          </label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="row" style="flex:1"><span class="muted" style="flex:0 0 96px">分隔符</span><input id="splitter" type="text" placeholder=", 或 | 或 空格"/></label>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <label style="display:flex;align-items:center;gap:8px"><input id="auto" type="checkbox" checked/> 自动分离</label>
+          <span class="muted" style="font-size:12px">若填写分隔符，则优先按分隔符切分</span>
+        </div>
+        <div class="toolbar" style="margin-top:10px">
+          <button id="btnParseGo" class="btn btn-primary">解析并查看结果 →</button>
+          <button id="btnBuild" class="btn btn-secondary">生成可分享链接</button>
+          <span id="built" class="muted link"></span>
+        </div>
+        <div id="stA" class="status"></div>
+      </div>
+
+      <div class="section">
+        <div class="muted" style="margin-bottom:6px">URL 参数速记</div>
+        <div class="display">
+          • <span class="pill">直接复制</span><code>?code=内容</code><br>
+          • <span class="pill">智能拆分</span><code>?text=内容&mode=auto</code><br>
+          • <span class="pill">分隔符</span><code>?text=内容&split=,</code><br>
+          • <span class="pill">多值</span><code>?values=值1,值2</code>
+        </div>
+      </div>
     </div>
 
-    <!-- 左侧：输入 & 预览 -->
-    <div class="left">
-      <div class="section">
-        <div class="label">输入文本（未传入参数时可用）</div>
-        <textarea id="input" rows="6" placeholder="粘贴快递短信或任意文本，例如：\n【京东快递】取件码S0246，您的快件尾号1864已送达北京北航校园服务站，地址：……，联系电话 18210824625，取件和寄件可咨询 https://3.cn/10ti-NYEr"></textarea>
-        <div style="height:10px"></div>
-        <div class="row">
-          <label class="opt"><input type="checkbox" id="autoMode" checked> 自动分离（智能抽取）</label>
-          <div class="opt" style="flex:.9">
-            <span class="small">自定义分隔符</span>
-            <input type="text" id="splitter" placeholder="如：, 或 | 或 空格" />
+    <!-- 视图 B：结果页 -->
+    <div id="view-result" class="card" role="region" aria-labelledby="titleB" style="display:none">
+      <div class="topbar"><button id="backBtn" class="btn btn-secondary back">← 返回</button></div>
+      <div class="header"><div class="icon">📋</div><h1 id="titleB">快速复制（结果）</h1></div>
+      <p class="muted">点击任意条目直接复制；支持多选复制。</p>
+
+      <div class="grid">
+        <div class="section">
+          <div class="muted" style="margin-bottom:6px">完整内容</div>
+          <div id="full" class="display section" style="background:#fff"></div>
+          <div class="toolbar" style="margin-top:10px">
+            <button id="copyFull" class="btn btn-primary">复制完整内容</button>
+            <button id="copySel" class="btn btn-secondary" disabled>复制选中（0）</button>
           </div>
+          <div id="stB" class="status"></div>
         </div>
-        <div style="height:10px"></div>
-        <div class="row">
-          <button class="btn btn-primary" id="btnParse">解析 / 更新</button>
-          <button class="btn btn-secondary" id="btnBuildLink">生成可分享链接</button>
-        </div>
-        <div id="buildLinkResult" class="hint" style="margin-top:8px;word-break:break-all;"></div>
-      </div>
-
-      <div class="section">
-        <div class="label">完整内容</div>
-        <div class="display-box" id="fullContent">-</div>
-        <div style="height:10px"></div>
-        <div class="row">
-          <button class="btn btn-primary" id="btnCopyAll">复制完整内容</button>
-          <button class="btn btn-secondary" id="btnCopySelected" disabled>复制选中（0）</button>
-        </div>
-        <div id="status" class="status"></div>
-      </div>
-    </div>
-
-    <!-- 右侧：抽取的片段 -->
-    <div class="right">
-      <div class="section">
-        <div class="label">自动抽取 / 分段结果（点击任意一项即可复制）</div>
-        <div id="parts" class="parts"></div>
-        <div class="divider"></div>
-        <label class="opt small"><input type="checkbox" id="multiSelect"> 多选模式</label>
-        <div class="hint" style="margin-top:8px">识别类型：取件码、尾号、电话（手机/座机）、网址、地址、地点描述（含“柜/楼/座”）、中括号标签等</div>
-      </div>
-
-      <div class="section">
-        <div class="label">URL 参数用法</div>
-        <div class="hint">
-          • 基础复制：<code>?code=内容</code><br />
-          • 智能拆分：<code>?text=内容&mode=auto</code><br />
-          • 自定义分隔：<code>?text=内容&split=,</code><br />
-          • 多个值：<code>?values=值1,值2,值3</code>
+        <div class="section">
+          <div class="muted" style="margin-bottom:6px">抽取结果</div>
+          <div id="parts" class="parts"></div>
+          <div class="toolbar" style="margin-top:8px">
+            <label style="display:flex;align-items:center;gap:8px"><input id="multi" type="checkbox"/> 多选模式</label>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    /******************** 工具函数 ********************/
-    const $ = (id) => document.getElementById(id);
-    const statusEl = $('status');
-
-    const showStatus = (msg, ok=true) => {
-      statusEl.textContent = msg;
-      statusEl.className = 'status show ' + (ok ? 'ok' : 'err');
-      clearTimeout(showStatus._t);
-      showStatus._t = setTimeout(()=>{ statusEl.className = 'status'; }, 2800);
-    };
-
-    async function copyText(text, msg='已复制') {
-      try {
-        await navigator.clipboard.writeText(text);
-        showStatus(msg, true);
-      } catch {
-        const ta = document.createElement('textarea');
-        ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
-        document.body.appendChild(ta); ta.select();
-        try { document.execCommand('copy'); showStatus(msg, true); }
-        catch { showStatus('复制失败，请手动复制', false); }
-        document.body.removeChild(ta);
-      }
+    /******** 路由与状态 ********/
+    const S = { text:'', auto:true, splitter:'', extracted:[], selected:new Set() };
+    const qs = (id)=>document.getElementById(id);
+    function go(view){
+      const A = qs('view-input'), B = qs('view-result');
+      if(view==='B'){ A.style.display='none'; B.style.display='block'; history.pushState({v:'B'},'','#result'); }
+      else { A.style.display='block'; B.style.display='none'; history.pushState({v:'A'},'','#'); }
     }
+    window.onpopstate = (e)=>{ const v = (e.state && e.state.v)|| (location.hash==='#result'?'B':'A'); go(v); };
 
-    const sanitize = (s='') => s
-      .replace(/[\u200B-\u200D\uFEFF]/g,'') // 零宽字符
-      .replace(/[\s\t\xA0]+/g,' ') // 异常空格
-      .replace(/\s*([，。；,;])\s*/g,'$1'); // 中英文标点两侧空格
+    /******** 工具函数 ********/
+    const showSt = (el,msg,ok=true)=>{ el.textContent=msg; el.className='status show '+(ok?'ok':'err'); clearTimeout(el._t); el._t=setTimeout(()=>{el.className='status'},2500); };
+    async function copyText(s){ try{ await navigator.clipboard.writeText(s); }catch{ const ta=document.createElement('textarea'); ta.value=s; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } }
 
-    const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)));
+    // 规范化：去零宽；合并换行和多空格；消除被短信插入的“中间空格”（校 内→校内；北 航→北航）
+    function normalize(raw=''){
+      return raw
+        .replace(/[\u200B-\u200D\uFEFF]/g,'')
+        .replace(/[\r\n]+/g,' ')
+        .replace(/\s+/g,' ')
+        .replace(/([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])/g,'$1$2')
+        .replace(/([\u4e00-\u9fa5])\s+([A-Za-z0-9])/g,'$1$2')
+        .replace(/([A-Za-z0-9])\s+([\u4e00-\u9fa5])/g,'$1$2')
+        .trim();
+    }
+    const uniq = (arr)=>Array.from(new Set(arr.filter(Boolean)));
 
-    /******************** 抽取规则 ********************/
-    function extractAll(raw) {
-      const text = sanitize(raw);
+    /******** 更智能的抽取 ********/
+    function extractAll(raw){
+      const text = normalize(raw);
       const parts = [];
 
-      // 1) 取件码（显式“取件码”），支持前缀字母：S0246、JD1234 等
-      const codeExp = /取件码\s*[:：]?\s*([A-Z]{1,2}?\d{3,8}|\d{4,8})/gi;
-      let m; while ((m = codeExp.exec(text))) {
-        parts.push({ key:'取件码', val:m[1], type:'code' });
-      }
-
-      // 2) 尾号
-      const tailExp = /尾号\s*(\d{2,4})/g; let t;
-      while ((t = tailExp.exec(text))) parts.push({ key:'尾号', val:t[1], type:'tail' });
-
-      // 3) 手机号（中国大陆） & 座机
-      const mobile = text.match(/(?<!\d)(1[3-9]\d{9})(?!\d)/g);
-      if (mobile) mobile.forEach(v=>parts.push({ key:'电话', val:v, type:'phone' }));
-      const landline = text.match(/(?<!\d)(0\d{2,3}-?\d{7,8})(?!\d)/g);
-      if (landline) landline.forEach(v=>parts.push({ key:'座机', val:v, type:'phone' }));
-
-      // 4) URL
-      const urls = text.match(/https?:\/\/[^\s，。；、)）]+/g);
-      if (urls) urls.forEach(v=>parts.push({ key:'链接', val:v, type:'url' }));
-
-      // 5) 地址（尽量从“地址：”开始到电话/链接/句末）
-      const addrExp = /(地址|取件地址)\s*[:：]\s*([\s\S]*?)(?=联系电话|联系电话:|电话|链接|https?:\/\/|取件|寄件|$)/g;
-      let a; while ((a = addrExp.exec(text))) {
-        const val = a[2].replace(/[，。；;]*$/,'').trim();
-        if (val) parts.push({ key:'地址', val, type:'address' });
-      }
-
-      // 6) 中括号标签
+      // 标签（【】）
       const tags = text.match(/【([^】]+)】/g);
-      if (tags) tags.forEach((it)=>{
-        const val = it.replace(/【|】/g,'');
-        parts.push({ key:'标签', val, type:'tag' });
-      });
+      if(tags){ for(const t of tags){ parts.push({key:'标签', val:t.replace(/【|】/g,''), type:'tag'}); } }
 
-      // 7) 地点描述（含 柜/楼/座 等关键词，且携带格位如 A16 / G20 / 11号柜）
-      const locs = text.match(/[\u4e00-\u9fa5A-Z0-9\- ]{0,20}(?:新主楼|新北|服务站|快递柜|[东南西北]侧)?[\u4e00-\u9fa5]*?(?:柜|楼|座)[\u4e00-\u9fa5 ]*([A-Z]?\d{1,3}|\d+号柜)/g);
-      if (locs) locs.forEach(v=>parts.push({ key:'地点', val:v.trim(), type:'location' }));
+      // 取件/凭码：多种写法（含字母-数字，如 B-2191）
+      const codeByWord = /(取件码|取货码|提货码|取件号|取货号|验证码|核验码|凭码|凭)\s*[:：]?\s*([A-Z]{1,3}-?\d{3,6}|\d{4,8})/gi;
+      let m; while((m=codeByWord.exec(text))) parts.push({key:'取件码', val:m[2], type:'code'});
 
-      // 8) 纯数字串（>=6），避免把手机号/尾号重复加入
-      const taken = new Set(parts.filter(p=>p.type==='phone' || p.type==='tail').map(p=>p.val));
-      const nums = text.match(/\b\d{6,}\b/g);
-      if (nums) nums.forEach(v=>{ if(!taken.has(v)) parts.push({ key:'数字', val:v, type:'number' }); });
+      // 通用码：A1234 / B-2191 / S0246（避免把时间 20:00 识别成码）
+      const codeGeneric = /(?<![A-Z0-9])([A-Z]{1,3}-?\d{3,6})(?![A-Z0-9:])/g;
+      let g; while((g=codeGeneric.exec(text))) parts.push({key:'可能的取件码', val:g[1], type:'code2'});
 
-      // 去重（按 key+val）
-      const seen = new Set();
-      const out = [];
-      for (const p of parts){
-        const k = p.key + '|' + p.val;
-        if (!seen.has(k)){ seen.add(k); out.push(p); }
+      // 尾号
+      const tail = /尾号\s*(\d{2,4})/g; let t;
+      while((t=tail.exec(text))) parts.push({key:'尾号', val:t[1], type:'tail'});
+
+      // 时间（HH:MM 或 “20点/20点前”）
+      const times = uniq((text.match(/\b(\d{1,2}:\d{2})\b/g)||[]).concat(text.match(/(\d{1,2})点(?:前)?/g)||[]));
+      times.forEach(v=>parts.push({key:'时间', val:v, type:'time'}));
+
+      // 手机号/座机
+      (text.match(/(?<!\d)(1[3-9]\d{9})(?!\d)/g)||[]).forEach(v=>parts.push({key:'电话', val:v, type:'phone'}));
+      (text.match(/(?<!\d)(0\d{2,3}-?\d{7,8})(?!\d)/g)||[]).forEach(v=>parts.push({key:'座机', val:v, type:'phone'}));
+
+      // URL
+      (text.match(/https?:\/\/[^\s，。；、)）]+/g)||[]).forEach(v=>parts.push({key:'链接', val:v, type:'url'}));
+
+      // 地址（“地址：”开头）
+      const addrRe = /(地址|取件地址)\s*[:：]\s*([\s\S]*?)(?=联系电话|电话|链接|https?:\/\/|取件|寄件|请|谢谢|$)/g;
+      let a; while((a=addrRe.exec(text))){ const v=a[2].replace(/[，。；;]*$/,'').trim(); if(v) parts.push({key:'地址', val:v, type:'address'}); }
+
+      // 地点片段：围绕关键词截一段（近邻宝/快递柜/驿站/服务站/校内/校区/新主楼/ABCD座/东西南北侧）
+      const locKey = /(近邻宝|丰巢|快递柜|驿站|服务站|校园服务站|校内|校区|[新旧]主楼|[ABCD]座|[东南西北]侧)/;
+      if(locKey.test(text)){
+        const idx = text.search(locKey);
+        const start = Math.max(0, idx-20), end = Math.min(text.length, idx+40);
+        const snippet = text.substring(start,end).replace(/[。；;,.]/g,'').trim();
+        if(snippet) parts.push({key:'地点', val:snippet, type:'location'});
       }
+
+      // 纯数字（>=6），避开电话/尾号
+      const taken = new Set(parts.filter(p=>p.type==='phone'||p.type==='tail').map(p=>p.val));
+      (text.match(/\b\d{6,}\b/g)||[]).forEach(v=>{ if(!taken.has(v)) parts.push({key:'数字', val:v, type:'number'}); });
+
+      // 去重
+      const out=[]; const seen=new Set();
+      for(const p of parts){ const k=p.key+'|'+p.val; if(!seen.has(k)){ seen.add(k); out.push(p); } }
       return out;
     }
 
-    /******************** 渲染 ********************/
-    let extracted = [];
-    const selectedIdx = new Set();
-
-    function renderParts(list){
-      const wrap = $('parts');
-      wrap.innerHTML = '';
-      list.forEach((p, idx)=>{
-        const item = document.createElement('div');
-        item.className = 'part' + (selectedIdx.has(idx) ? ' active' : '');
-        const k = document.createElement('div'); k.className = 'part-k'; k.textContent = p.key;
-        const v = document.createElement('div'); v.className = 'part-v'; v.textContent = p.val;
-        item.appendChild(k); item.appendChild(v);
-        item.addEventListener('click', ()=> onPartClick(idx));
-        wrap.appendChild(item);
+    /******** 渲染 ********/
+    function render(){
+      qs('full').textContent = S.text || '（空）';
+      const partsWrap = qs('parts'); partsWrap.innerHTML='';
+      S.extracted.forEach((p,i)=>{
+        const d=document.createElement('div'); d.className='part'+(S.selected.has(i)?' active':'');
+        const k=document.createElement('div'); k.className='k'; k.textContent=p.key;
+        const v=document.createElement('div'); v.className='v'; v.textContent=p.val;
+        d.appendChild(k); d.appendChild(v);
+        d.addEventListener('click',()=>{
+          if(!qs('multi').checked){
+            copyText(p.val).then(()=>{ const st=qs('stB'); showSt(st,`已复制：${p.val}`,true); });
+          }else{
+            S.selected.has(i)?S.selected.delete(i):S.selected.add(i); render();
+          }
+        });
+        partsWrap.appendChild(d);
       });
-      updateSelectedBtn();
+      const n=S.selected.size; const btn=qs('copySel'); btn.textContent=`复制选中（${n})`; btn.disabled=!n;
     }
 
-    function onPartClick(idx){
-      if (!$('multiSelect').checked){
-        copyText(extracted[idx].val, `已复制：${extracted[idx].val}`);
-        return;
+    /******** 交互 ********/
+    qs('btnParseGo').addEventListener('click',()=>{
+      S.text = qs('ta').value||''; S.auto = qs('auto').checked; S.splitter = qs('splitter').value||''; S.selected.clear();
+      if(S.splitter){
+        S.extracted = S.text.split(S.splitter).map(s=>s.trim()).filter(Boolean).map((v,i)=>({key:`部分${i+1}`,val:v}));
+      }else if(S.auto){
+        S.extracted = extractAll(S.text);
+      }else{
+        S.extracted = [];
       }
-      if (selectedIdx.has(idx)) selectedIdx.delete(idx); else selectedIdx.add(idx);
-      renderParts(extracted);
-    }
-
-    function updateSelectedBtn(){
-      const btn = $('btnCopySelected');
-      const n = selectedIdx.size;
-      btn.textContent = `复制选中（${n}）`;
-      btn.disabled = n===0;
-    }
-
-    function setFullContent(text){
-      $('fullContent').textContent = text || '-';
-    }
-
-    /******************** URL 参数 & 解析 ********************/
-    function getParams(){
-      const sp = new URLSearchParams(location.search);
-      return {
-        code: sp.get('code'),
-        text: sp.get('text'),
-        mode: sp.get('mode'),
-        split: sp.get('split'),
-        values: sp.get('values'),
-        title: sp.get('title')
-      };
-    }
-
-    async function applyParams(){
-      const p = getParams();
-      if (p.title) $('title').textContent = decodeURIComponent(p.title);
-
-      if (p.code){
-        const v = p.code; setFullContent(v); await copyText(v, '已自动复制内容');
-        $('input').value = v;
-        extracted = extractAll(v); renderParts(extracted);
-        return;
-      }
-
-      if (p.values){
-        const arr = p.values.split(',').map(s=>s.trim()).filter(Boolean);
-        setFullContent(arr.join('\n'));
-        $('input').value = arr.join(' , ');
-        extracted = arr.map((v,i)=>({key:`项目${i+1}`, val:v, type:'item'}));
-        renderParts(extracted);
-        return;
-      }
-
-      if (p.text){
-        const t = decodeURIComponent(p.text);
-        setFullContent(t); $('input').value = t;
-        if (p.mode === 'auto'){
-          extracted = extractAll(t); renderParts(extracted);
-        }
-        if (p.split){
-          const segs = t.split(p.split).map(s=>s.trim()).filter(Boolean);
-          extracted = segs.map((v,i)=>({key:`部分${i+1}`, val:v, type:'part'}));
-          renderParts(extracted);
-        }
-        return;
-      }
-
-      // 无参数：空态
-      setFullContent('（等待输入…）');
-    }
-
-    /******************** 事件绑定 ********************/
-    $('btnCopyAll').addEventListener('click', ()=> copyText($('fullContent').textContent,'已复制完整内容'));
-    $('btnCopySelected').addEventListener('click', ()=>{
-      const lines = [...selectedIdx].sort((a,b)=>a-b).map(i=>extracted[i].val).join('\n');
-      copyText(lines, `已复制 ${selectedIdx.size} 项`);
+      go('B'); render();
     });
+    qs('copyFull').addEventListener('click',()=>{ copyText(qs('full').textContent).then(()=>showSt(qs('stB'),'已复制完整内容',true)); });
+    qs('copySel').addEventListener('click',()=>{ const lines=[...S.selected].sort((a,b)=>a-b).map(i=>S.extracted[i].val).join('\n'); copyText(lines).then(()=>showSt(qs('stB'),`已复制 ${S.selected.size} 项`,true)); });
+    qs('multi').addEventListener('change',()=>{ S.selected.clear(); render(); });
 
-    $('btnParse').addEventListener('click', ()=>{
-      const raw = $('input').value || '';
-      setFullContent(raw);
-      selectedIdx.clear();
-      const split = $('splitter').value;
-      if (split){
-        const segs = raw.split(split).map(s=>s.trim()).filter(Boolean);
-        extracted = segs.map((v,i)=>({key:`部分${i+1}`, val:v, type:'part'}));
-      } else if ($('autoMode').checked){
-        extracted = extractAll(raw);
-      } else {
-        extracted = [];
-      }
-      renderParts(extracted);
-      showStatus('解析完成', true);
-    });
-
-    $('btnBuildLink').addEventListener('click', ()=>{
-      const raw = $('input').value || '';
+    qs('btnBuild').addEventListener('click',()=>{
       const base = location.origin + location.pathname;
+      const raw = qs('ta').value||''; const split = qs('splitter').value||''; const auto = qs('auto').checked;
       let url = base;
-      if ($('splitter').value){
-        url += `?text=${encodeURIComponent(raw)}&split=${encodeURIComponent($('splitter').value)}`;
-      } else if ($('autoMode').checked){
-        url += `?text=${encodeURIComponent(raw)}&mode=auto`;
-      } else {
-        url += `?code=${encodeURIComponent(raw)}`;
-      }
-      $('buildLinkResult').innerHTML = `👉 复制并分享：<a href="${url}">${url}</a>`;
-      copyText(url, '已复制生成的链接');
+      if(split){ url += `?text=${encodeURIComponent(raw)}&split=${encodeURIComponent(split)}`; }
+      else if(auto){ url += `?text=${encodeURIComponent(raw)}&mode=auto`; }
+      else { url += `?code=${encodeURIComponent(raw)}`; }
+      qs('built').innerHTML = `已生成：<a href="${url}">${url}</a>`;
+      copyText(url); showSt(qs('stA'),'链接已复制',true);
     });
 
-    $('multiSelect').addEventListener('change', ()=>{ selectedIdx.clear(); renderParts(extracted); });
-
+    // URL 直接进结果页
+    function applyParams(){
+      const sp=new URLSearchParams(location.search);
+      const code=sp.get('code'); const text=sp.get('text'); const values=sp.get('values'); const mode=sp.get('mode'); const split=sp.get('split');
+      if(code){ S.text=code; S.extracted=extractAll(code); go('B'); render(); copyText(code).then(()=>showSt(qs('stB'),'已自动复制内容',true)); return; }
+      if(values){ const arr=values.split(',').map(s=>s.trim()).filter(Boolean); S.text=arr.join('\n'); S.extracted=arr.map((v,i)=>({key:`项目${i+1}`,val:v})); go('B'); render(); return; }
+      if(text){ const t=decodeURIComponent(text); S.text=t; if(split){ S.extracted=t.split(split).map(s=>s.trim()).filter(Boolean).map((v,i)=>({key:`部分${i+1}`,val:v})); } else if(mode==='auto'){ S.extracted=extractAll(t); } go('B'); render(); return; }
+      go('A');
+    }
+    qs('backBtn').addEventListener('click',()=>go('A'));
     window.addEventListener('load', applyParams);
   </script>
 </body>
