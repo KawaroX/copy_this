@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>取件码复制</title>
+    <title>快速复制</title>
     <style>
         * {
             margin: 0;
@@ -12,63 +12,171 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', sans-serif;
+            background: #f7f7f5;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            color: #37352f;
         }
         
         .container {
             background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
+            border-radius: 8px;
+            padding: 48px 40px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 40px rgba(0, 0, 0, 0.08);
+            max-width: 600px;
             width: 100%;
-            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 32px;
         }
         
         .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            font-size: 48px;
+            margin-bottom: 16px;
         }
         
         h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #37352f;
+            margin-bottom: 8px;
         }
         
-        .code-display {
-            background: #f7f9fc;
-            border: 2px solid #667eea;
-            border-radius: 12px;
-            padding: 30px;
-            margin: 30px 0;
-            font-size: 36px;
-            font-weight: bold;
-            color: #667eea;
-            letter-spacing: 3px;
-            font-family: 'Courier New', monospace;
+        .subtitle {
+            color: #787774;
+            font-size: 14px;
+        }
+        
+        .content-section {
+            margin: 24px 0;
+        }
+        
+        .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #787774;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .display-box {
+            background: #f7f7f5;
+            border: 1px solid #e3e2e0;
+            border-radius: 4px;
+            padding: 16px;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 18px;
+            color: #37352f;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+        
+        .parts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .part-item {
+            background: #f7f7f5;
+            border: 1px solid #e3e2e0;
+            border-radius: 4px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .part-item:hover {
+            background: #f0f0ee;
+            border-color: #d3d1cb;
+        }
+        
+        .part-text {
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 15px;
+            color: #37352f;
+            flex: 1;
+        }
+        
+        .part-label {
+            font-size: 11px;
+            color: #787774;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        
+        .copy-indicator {
+            color: #787774;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .part-item:hover .copy-indicator {
+            opacity: 1;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            flex: 1;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .btn-primary {
+            background: #37352f;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2e2c28;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #37352f;
+            border: 1px solid #e3e2e0;
+        }
+        
+        .btn-secondary:hover {
+            background: #f7f7f5;
         }
         
         .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-weight: 500;
-            font-size: 16px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 14px;
             opacity: 0;
             transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .status.show {
@@ -76,70 +184,192 @@
         }
         
         .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #edf3ec;
+            color: #0f7b6c;
         }
         
         .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #fdebec;
+            color: #e03e3e;
         }
         
-        .info {
-            color: #666;
-            font-size: 14px;
+        .info-text {
+            color: #9b9a97;
+            font-size: 13px;
             margin-top: 20px;
-            line-height: 1.6;
+            line-height: 1.5;
         }
         
-        .copy-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+        .divider {
+            height: 1px;
+            background: #e3e2e0;
+            margin: 24px 0;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
         }
         
-        .copy-btn:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .copy-btn:active {
-            transform: translateY(0);
+        .checkbox-item label {
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="icon">📦</div>
-        <h1>取件码已复制</h1>
-        <div class="code-display" id="codeDisplay">-</div>
-        <button class="copy-btn" onclick="copyCode()">再次复制</button>
+        <div class="header">
+            <div class="icon">📋</div>
+            <h1 id="title">快速复制</h1>
+            <div class="subtitle" id="subtitle">点击内容即可复制到剪贴板</div>
+        </div>
+
+        <div class="content-section" id="mainContent">
+            <div class="label">内容</div>
+            <div class="display-box" id="fullContent">-</div>
+        </div>
+
+        <div class="content-section" id="partsSection" style="display: none;">
+            <div class="label">选择要复制的部分</div>
+            <div class="parts-container" id="partsContainer"></div>
+            <div class="checkbox-item" style="margin-top: 16px;">
+                <input type="checkbox" id="copyAllCheckbox">
+                <label for="copyAllCheckbox">一次性复制所有选中项</label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="copyContent()">
+                <span id="btnText">复制</span>
+            </button>
+            <button class="btn btn-secondary" onclick="copyAll()" id="copyAllBtn" style="display: none;">
+                复制全部
+            </button>
+        </div>
+
         <div class="status" id="status"></div>
-        <div class="info">
-            ✨ 取件码已自动复制到剪贴板<br>
-            现在可以直接粘贴使用了
+
+        <div class="divider"></div>
+
+        <div class="info-text">
+            <strong>使用方法：</strong><br>
+            • 基础复制：<code>?code=内容</code><br>
+            • 智能拆分：<code>?text=内容&mode=auto</code><br>
+            • 自定义分隔：<code>?text=内容&split=,</code><br>
+            • 多个值：<code>?values=值1,值2,值3</code>
         </div>
     </div>
 
     <script>
-        function getCodeFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('code') || '未找到取件码';
+        let currentMode = 'simple';
+        let extractedParts = [];
+        let selectedParts = new Set();
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                code: params.get('code'),
+                text: params.get('text'),
+                mode: params.get('mode'),
+                split: params.get('split'),
+                values: params.get('values'),
+                title: params.get('title')
+            };
+        }
+
+        function autoExtractParts(text) {
+            const parts = [];
+            
+            // 提取数字（如取件码）
+            const numbers = text.match(/\d{6,}/g);
+            if (numbers) {
+                numbers.forEach((num, i) => {
+                    parts.push({ label: `数字 ${i + 1}`, value: num, type: 'number' });
+                });
+            }
+            
+            // 提取中文括号内容
+            const brackets = text.match(/【([^】]+)】/g);
+            if (brackets) {
+                brackets.forEach((item, i) => {
+                    const content = item.replace(/【|】/g, '');
+                    parts.push({ label: `标签 ${i + 1}`, value: content, type: 'tag' });
+                });
+            }
+            
+            // 提取地点信息（包含"柜"字的部分）
+            const locations = text.match(/[^，。,\.]+[柜楼]\s*[A-Z0-9]+/g);
+            if (locations) {
+                locations.forEach((loc, i) => {
+                    parts.push({ label: `位置 ${i + 1}`, value: loc.trim(), type: 'location' });
+                });
+            }
+            
+            return parts;
+        }
+
+        function renderParts(parts) {
+            const container = document.getElementById('partsContainer');
+            container.innerHTML = '';
+            
+            parts.forEach((part, index) => {
+                const div = document.createElement('div');
+                div.className = 'part-item';
+                div.onclick = () => togglePart(index, part.value);
+                
+                div.innerHTML = `
+                    <div style="flex: 1;">
+                        <div class="part-label">${part.label}</div>
+                        <div class="part-text">${part.value}</div>
+                    </div>
+                    <div class="copy-indicator">点击复制</div>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        function togglePart(index, value) {
+            const checkbox = document.getElementById('copyAllCheckbox');
+            
+            if (checkbox.checked) {
+                if (selectedParts.has(index)) {
+                    selectedParts.delete(index);
+                } else {
+                    selectedParts.add(index);
+                }
+                updatePartSelection();
+            } else {
+                copyToClipboard(value, `已复制：${value}`);
+            }
+        }
+
+        function updatePartSelection() {
+            const items = document.querySelectorAll('.part-item');
+            items.forEach((item, index) => {
+                if (selectedParts.has(index)) {
+                    item.style.background = '#e3f2fd';
+                    item.style.borderColor = '#90caf9';
+                } else {
+                    item.style.background = '#f7f7f5';
+                    item.style.borderColor = '#e3e2e0';
+                }
+            });
         }
 
         function showStatus(message, isSuccess) {
             const status = document.getElementById('status');
-            status.textContent = message;
+            status.innerHTML = `<span>${isSuccess ? '✓' : '✕'}</span> ${message}`;
             status.className = 'status show ' + (isSuccess ? 'success' : 'error');
             
             setTimeout(() => {
@@ -147,21 +377,13 @@
             }, 3000);
         }
 
-        async function copyCode() {
-            const code = getCodeFromUrl();
-            
-            if (code === '未找到取件码') {
-                showStatus('❌ URL中没有取件码参数', false);
-                return;
-            }
-            
+        async function copyToClipboard(text, successMsg) {
             try {
-                await navigator.clipboard.writeText(code);
-                showStatus('✅ 复制成功！', true);
+                await navigator.clipboard.writeText(text);
+                showStatus(successMsg || '复制成功！', true);
             } catch (err) {
-                // 备用复制方法
                 const textArea = document.createElement('textarea');
-                textArea.value = code;
+                textArea.value = text;
                 textArea.style.position = 'fixed';
                 textArea.style.left = '-999999px';
                 document.body.appendChild(textArea);
@@ -169,24 +391,117 @@
                 
                 try {
                     document.execCommand('copy');
-                    showStatus('✅ 复制成功！', true);
+                    showStatus(successMsg || '复制成功！', true);
                 } catch (err2) {
-                    showStatus('❌ 复制失败，请手动复制', false);
+                    showStatus('复制失败，请手动复制', false);
                 }
                 
                 document.body.removeChild(textArea);
             }
         }
 
-        // 页面加载时自动复制
-        window.addEventListener('load', () => {
-            const code = getCodeFromUrl();
-            document.getElementById('codeDisplay').textContent = code;
+        function copyContent() {
+            const checkbox = document.getElementById('copyAllCheckbox');
             
-            if (code !== '未找到取件码') {
-                copyCode();
+            if (currentMode === 'parts' && checkbox.checked && selectedParts.size > 0) {
+                const selected = extractedParts
+                    .filter((_, index) => selectedParts.has(index))
+                    .map(p => p.value)
+                    .join('\n');
+                copyToClipboard(selected, `已复制 ${selectedParts.size} 项内容`);
+            } else if (currentMode === 'simple') {
+                const content = document.getElementById('fullContent').textContent;
+                copyToClipboard(content, '已复制');
             } else {
-                showStatus('❌ 请在URL中添加 ?code=取件码', false);
+                showStatus('请点击要复制的内容', false);
+            }
+        }
+
+        function copyAll() {
+            const content = document.getElementById('fullContent').textContent;
+            copyToClipboard(content, '已复制完整内容');
+        }
+
+        function init() {
+            const params = getUrlParams();
+            
+            // 设置标题
+            if (params.title) {
+                document.getElementById('title').textContent = decodeURIComponent(params.title);
+            }
+            
+            // 简单模式：直接复制 code
+            if (params.code) {
+                currentMode = 'simple';
+                document.getElementById('fullContent').textContent = params.code;
+                document.getElementById('subtitle').textContent = '内容已自动复制到剪贴板';
+                copyToClipboard(params.code, '已自动复制取件码');
+                return;
+            }
+            
+            // 多值模式
+            if (params.values) {
+                currentMode = 'parts';
+                const values = params.values.split(',').map(v => v.trim());
+                document.getElementById('fullContent').textContent = values.join('\n');
+                extractedParts = values.map((v, i) => ({ 
+                    label: `项目 ${i + 1}`, 
+                    value: v,
+                    type: 'item'
+                }));
+                renderParts(extractedParts);
+                document.getElementById('partsSection').style.display = 'block';
+                document.getElementById('copyAllBtn').style.display = 'block';
+                document.getElementById('btnText').textContent = '复制选中';
+                return;
+            }
+            
+            // 文本处理模式
+            if (params.text) {
+                const text = decodeURIComponent(params.text);
+                document.getElementById('fullContent').textContent = text;
+                
+                // 自动识别模式
+                if (params.mode === 'auto') {
+                    currentMode = 'parts';
+                    extractedParts = autoExtractParts(text);
+                    
+                    if (extractedParts.length > 0) {
+                        renderParts(extractedParts);
+                        document.getElementById('partsSection').style.display = 'block';
+                        document.getElementById('copyAllBtn').style.display = 'block';
+                        document.getElementById('btnText').textContent = '复制选中';
+                    }
+                }
+                
+                // 自定义分隔符
+                if (params.split) {
+                    currentMode = 'parts';
+                    const parts = text.split(params.split).map(v => v.trim()).filter(v => v);
+                    extractedParts = parts.map((v, i) => ({ 
+                        label: `部分 ${i + 1}`, 
+                        value: v,
+                        type: 'part'
+                    }));
+                    renderParts(extractedParts);
+                    document.getElementById('partsSection').style.display = 'block';
+                    document.getElementById('copyAllBtn').style.display = 'block';
+                    document.getElementById('btnText').textContent = '复制选中';
+                }
+                
+                return;
+            }
+            
+            // 没有参数
+            showStatus('URL中未找到内容参数', false);
+        }
+
+        window.addEventListener('load', init);
+        
+        document.getElementById('copyAllCheckbox').addEventListener('change', (e) => {
+            if (!e.target.checked) {
+                selectedParts.clear();
+                updatePartSelection();
             }
         });
     </script>
